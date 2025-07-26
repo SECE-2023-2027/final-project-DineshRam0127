@@ -48,7 +48,6 @@
     "date-fns": "^3.0.0",
     "embla-carousel-react": "^8.3.0",
     "eslint": "8.49.0",
-    "eslint-config-next": "13.5.1",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.525.0",
     "mongodb": "^6.18.0",
@@ -69,5 +68,10 @@
     "typescript": "5.2.2",
     "vaul": "^0.9.9",
     "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.0",
+    "@babel/preset-react": "^7.27.1",
+    "eslint-config-next": "^15.4.4"
   }
 }

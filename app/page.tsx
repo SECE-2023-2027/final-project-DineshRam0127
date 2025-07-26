@@ -1,17 +1,30 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Megaphone, Users, Clock, TrendingUp } from 'lucide-react';
+import { Megaphone, Users, Clock } from 'lucide-react';
 import AnnouncementCard from '@/components/AnnouncementCard';
 import AnnouncementForm from '@/components/AnnouncementForm';
 import FilterBar from '@/components/FilterBar';
 
-// Sample data for immediate display
-const sampleAnnouncements = [
+// Type definition for an announcement
+interface Announcement {
+  _id: string;
+  title: string;
+  content: string;
+  category: string;
+  priority: string;
+  author: string;
+  isPinned: boolean;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+const sampleAnnouncements: Announcement[] = [
   {
     _id: '1',
     title: "Welcome to Community Hub! 🎉",
-    content: "We're excited to launch our new community announcement platform. This is where you'll find all the latest updates, events, and important information for our community. Stay tuned for more exciting announcements!",
+    content: "We're excited to launch our new community announcement platform...",
     category: "General",
     priority: "High",
     author: "Community Admin",
@@ -23,7 +36,7 @@ const sampleAnnouncements = [
   {
     _id: '2',
     title: "Monthly Community Meeting - January 2025",
-    content: "Join us for our monthly community meeting on January 15th at 7:00 PM EST. We'll be discussing upcoming events, community feedback, and exciting new initiatives. Meeting link will be shared closer to the date.",
+    content: "Join us for our monthly community meeting...",
     category: "Events",
     priority: "Medium",
     author: "Event Coordinator",
@@ -35,7 +48,7 @@ const sampleAnnouncements = [
   {
     _id: '3',
     title: "System Maintenance Scheduled",
-    content: "We will be performing scheduled maintenance on our systems this weekend (January 11-12). Some services may be temporarily unavailable. We apologize for any inconvenience and appreciate your patience.",
+    content: "We will be performing scheduled maintenance...",
     category: "Updates",
     priority: "High",
     author: "Tech Team",
@@ -47,7 +60,7 @@ const sampleAnnouncements = [
   {
     _id: '4',
     title: "New Community Guidelines Released",
-    content: "We've updated our community guidelines to ensure a safe and welcoming environment for everyone. Please take a moment to review the new guidelines on our website. Thank you for helping us maintain a positive community space.",
+    content: "We've updated our community guidelines...",
     category: "News",
     priority: "Medium",
     author: "Moderation Team",
@@ -59,16 +72,15 @@ const sampleAnnouncements = [
 ];
 
 export default function Home() {
-  const [announcements, setAnnouncements] = useState(sampleAnnouncements);
-  const [filteredAnnouncements, setFilteredAnnouncements] = useState([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>(sampleAnnouncements);
+  const [filteredAnnouncements, setFilteredAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [editingAnnouncement, setEditingAnnouncement] = useState(null);
+  const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   useEffect(() => {
-    // Try to fetch from API, but don't block the UI
     fetchAnnouncements();
   }, []);
 
@@ -78,30 +90,22 @@ export default function Home() {
 
   const fetchAnnouncements = async () => {
     try {
-      console.log('Fetching announcements from API...');
+      console.log('Fetching announcements...');
       const response = await fetch('/api/announcements');
-      console.log('Response status:', response.status);
       const data = await response.json();
-      console.log('Response data:', data);
-      
-      if (data.success) {
-        // Only update if we got data from the API
-        if (data.data && data.data.length > 0) {
-          setAnnouncements(data.data);
-        }
-      } else {
-        console.error('API returned error:', data.error);
+
+      if (data.success && data.data && data.data.length > 0) {
+        setAnnouncements(data.data);
       }
     } catch (error) {
       console.error('Error fetching announcements:', error);
-      // Keep using sample data if API fails
     } finally {
       setLoading(false);
     }
   };
 
   const filterAnnouncements = () => {
-    let filtered = announcements;
+    let filtered = [...announcements];
 
     if (selectedCategory !== 'All') {
       filtered = filtered.filter(ann => ann.category === selectedCategory);
@@ -118,31 +122,30 @@ export default function Home() {
     setFilteredAnnouncements(filtered);
   };
 
-  const handleSave = (savedAnnouncement) => {
-    // Generate a temporary ID if not provided
+  const handleSave = (savedAnnouncement: Announcement) => {
     if (!savedAnnouncement._id) {
       savedAnnouncement._id = Date.now().toString();
       savedAnnouncement.createdAt = new Date().toISOString();
       savedAnnouncement.updatedAt = new Date().toISOString();
     }
-    
+
     if (editingAnnouncement) {
-      setAnnouncements(announcements.map(ann =>
-        ann._id === savedAnnouncement._id ? savedAnnouncement : ann
-      ));
+      setAnnouncements(prev =>
+        prev.map(ann => ann._id === savedAnnouncement._id ? savedAnnouncement : ann)
+      );
     } else {
-      setAnnouncements([savedAnnouncement, ...announcements]);
+      setAnnouncements(prev => [savedAnnouncement, ...prev]);
     }
     setEditingAnnouncement(null);
   };
 
-  const handleEdit = (announcement) => {
+  const handleEdit = (announcement: Announcement) => {
     setEditingAnnouncement(announcement);
     setShowForm(true);
   };
 
-  const handleDelete = (announcementId) => {
-    setAnnouncements(announcements.filter(ann => ann._id !== announcementId));
+  const handleDelete = (announcementId: string) => {
+    setAnnouncements(prev => prev.filter(ann => ann._id !== announcementId));
   };
 
   const handleCreateNew = () => {
@@ -192,7 +195,7 @@ export default function Home() {
                 <p className="text-gray-600">Stay updated with the latest announcements</p>
               </div>
             </div>
-            
+
             <div className="hidden sm:flex items-center gap-6 text-sm text-gray-600">
               <div className="text-center">
                 <div className="font-bold text-lg text-gray-900">{stats.total}</div>
@@ -211,9 +214,8 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* Main */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Cards - Mobile */}
         <div className="grid grid-cols-2 sm:hidden gap-4 mb-8">
           <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
             <div className="flex items-center gap-2">
@@ -235,7 +237,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Filter Bar */}
         <FilterBar
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
